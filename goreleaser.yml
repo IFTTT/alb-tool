@@ -1,0 +1,8 @@
+build:
+  main: alb-tool/main.go
+  binary: alb-tool
+  goos:
+    - darwin
+    - linux
+  goarch:
+    - amd64
