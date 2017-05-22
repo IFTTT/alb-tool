@@ -102,11 +102,7 @@ func (a Alb) CheckHealth(maxWait time.Duration) (healthy bool, err error) {
     start := time.Now()
 
     for {
-      resp, err := http.Get(fmt.Sprintf("http://%s:%d%s", a.localIP, a.port, path))
-
-      if err != nil {
-        return false, err
-      }
+      resp, _ := http.Get(fmt.Sprintf("http://%s:%d%s", a.localIP, a.port, path))
 
       if resp.StatusCode == statusCode {
         break
