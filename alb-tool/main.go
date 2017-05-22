@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"flag"
 	"os"
-	"os/signal"
-	"syscall"
 	"time"
 
 	"github.com/ifttt/alb-tool/alb"
@@ -16,8 +14,10 @@ func main() {
 
 	arn := flag.String("arn", "", "the arn of the load balancer")
 	port := flag.Int64("port", 0, "the port to register with the alb")
+	register := flag.Bool("register", false, "register this instance with the alb")
+	deregister := flag.Bool("deregister", false, "deregister this instance from the alb")
 	maxWait := flag.Int64("maxWait", 30, "how long to wait for the service to become healthy")
-	checkHealth := flag.Bool("checkHealth", false, "check health before registering with the alb")
+	checkHealth := flag.Bool("checkHealth", false, "check health locally before registering with the alb")
 
 	flag.Parse()
 
@@ -28,7 +28,7 @@ func main() {
 	}
 
 	if *checkHealth {
-		healhy, err := alb.CheckHealth(time.Duration(*maxWait)*time.Second)
+		healhy, err := alb.CheckLocalHealth(time.Duration(*maxWait)*time.Second)
 
 		if err != nil {
 			panic(err)
@@ -42,24 +42,24 @@ func main() {
 		}
 	}
 
-	err = alb.Register()
+	if *register {
+		err = alb.Register()
 
-	if err != nil {
-		alb.Deregister()
-		panic(err)
+		if err != nil {
+			alb.Deregister()
+			panic(err)
+		}
+
+		fmt.Printf("Instance registered on port %d\n", *port)
 	}
 
-	fmt.Printf("Instance registered on port %d\n", *port)
+	if *deregister {
+		err = alb.Deregister()
 
-	sigs := make(chan os.Signal, 1)
-	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
-	<-sigs
+		if err != nil {
+			panic(err)
+		}
 
-	err = alb.Deregister()
-
-	if err != nil {
-		panic(err)
+		fmt.Println("Instance draining")
 	}
-
-	fmt.Println("Instance draining")
 }

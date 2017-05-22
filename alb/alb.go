@@ -79,7 +79,7 @@ func (a Alb) Deregister() error {
   return err
 }
 
-func (a Alb) CheckHealth(maxWait time.Duration) (healthy bool, err error) {
+func (a Alb) CheckLocalHealth(maxWait time.Duration) (healthy bool, err error) {
   params := &elbv2.DescribeTargetGroupsInput{
     TargetGroupArns: []*string{
       aws.String(a.arn),
