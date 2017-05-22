@@ -21,7 +21,8 @@ type Alb struct {
 }
 
 func New(arn string, port int64) (*Alb, error) {
-  session := session.New()
+  session := session.Must(session.NewSession())
+
   svc := elbv2.New(session)
   metadata := ec2metadata.New(session)
 
